@@ -12,81 +12,51 @@
     <link href="https://fonts.googleapis.com/css2?family=Google+Sans:ital,opsz,wght@0,17..18,400..700;1,17..18,400..700&display=swap" rel="stylesheet">
     <!-- Icon -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+    
+    <!-- Flatpickr (Custom Datepicker) CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <link rel="stylesheet" type="text/css" href="https://npmcdn.com/flatpickr/dist/themes/airbnb.css">
+    
     <link rel="icon" type="image/x-icon" href="favicon.ico">
     <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
 
-    <link rel="manifest" href="site.webmanifest">
-    <link rel="icon" type="image/png" sizes="192x192" href="android-chrome-192x192.png">
-    <link rel="apple-touch-icon" sizes="180x180" href="android-chrome-192x192.png">
-
     <style>
-        body {
-            font-family: 'Google Sans', sans-serif;
-            background-color: #f3f4f6;
-        }
-        .table-container {
-            max-height: 500px;
-            overflow-y: auto !important; 
-            overflow-x: auto !important; /* รองรับการปัดซ้ายขวาบนมือถือ */
-        }
+        body { font-family: 'Google Sans', sans-serif; background-color: #f3f4f6; }
+        .table-container { max-height: 500px; overflow-y: auto !important; overflow-x: auto !important; }
         .table-container::-webkit-scrollbar { width: 8px; height: 8px; }
         .table-container::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; }
         .table-container::-webkit-scrollbar-thumb { background: #c7c7cc; border-radius: 4px; }
         .table-container::-webkit-scrollbar-thumb:hover { background: #a1a1aa; }
         
-        /* Checkbox styling for specific days */
-        .day-checkbox:checked + label {
-            background-color: #3C79F5;
-            color: white;
-            border-color: #3C79F5;
-        }
+        .day-checkbox:checked + label { background-color: #3C79F5; color: white; border-color: #3C79F5; }
+        .modal { transition: opacity 0.2s ease, transform 0.2s ease; }
+        body.modal-active { overflow-x: hidden; overflow-y: visible !important; }
 
-        /* Modal Animation */
-        .modal {
-            transition: opacity 0.2s ease, transform 0.2s ease;
-        }
-        body.modal-active {
-            overflow-x: hidden;
-            overflow-y: visible !important;
-        }
-
-        /* Save Icon Animation */
         @keyframes fade-blink {
             0%, 100% { opacity: 0; transform: scale(0.9); }
             10%, 90% { opacity: 1; transform: scale(1); }
             50% { color: #16a34a; }
         }
-        .saving-active {
-            animation: fade-blink 1.5s ease-in-out forwards;
-        }
+        .saving-active { animation: fade-blink 1.5s ease-in-out forwards; }
 
-        /* Tab Transition */
-        .tab-content {
-            display: none;
-            animation: fadeIn 0.3s ease-in-out;
-        }
-        .tab-content.active {
-            display: flex; 
-            flex-direction: column;
-            gap: 1.5rem; 
-        }
+        .tab-content { display: none; animation: fadeIn 0.3s ease-in-out; }
+        .tab-content.active { display: flex; flex-direction: column; gap: 1.5rem; }
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(5px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
-        /* Active Edit Day Animation */
         @keyframes ring-pulse {
             0% { box-shadow: 0 0 0 2px #1E293B; }
             50% { box-shadow: 0 0 0 6px rgba(30, 41, 59, 0.25); }
             100% { box-shadow: 0 0 0 2px #1E293B; }
         }
-        .active-ring-pulse {
-            animation: ring-pulse 1.5s infinite;
-            border-color: #1E293B !important;
-            background-color: #F8FAFC !important; /* พื้นหลังสีเทาอ่อน สบายตา ไม่ซ้ำสีวัน */
-        }
+        .active-ring-pulse { animation: ring-pulse 1.5s infinite; border-color: #1E293B !important; background-color: #F8FAFC !important; }
+
+        /* ปรับแต่งปฏิทิน Flatpickr ให้เข้ากับธีม */
+        .flatpickr-calendar { font-family: 'Google Sans', sans-serif !important; box-shadow: 0 10px 25px rgba(0,0,0,0.1) !important; border: 1px solid #e5e7eb !important; }
+        .flatpickr-day.selected { background: #3C79F5 !important; border-color: #3C79F5 !important; }
     </style>
 </head>
 <body class="min-h-screen py-4 sm:py-6 px-2 sm:px-4 bg-slate-100 flex flex-col items-center gap-4 sm:gap-6 overflow-x-hidden">
@@ -113,23 +83,29 @@
         </div>
     </div>
 
+    <!-- ERA TOGGLE (สลับ พ.ศ. / ค.ศ.) -->
+    <div class="w-full max-w-4xl flex justify-between items-center bg-white rounded-xl shadow-sm p-1.5 sm:p-2 mb-[-0.5rem] sm:mb-[-1rem] border border-gray-200 z-40 relative">
+        <span class="text-xs sm:text-sm font-bold text-gray-700 ml-2 sm:ml-3 flex items-center gap-2"><i class="fas fa-calendar-day text-purple-500"></i> รูปแบบปฏิทิน</span>
+        <div class="flex bg-gray-100 p-1 rounded-lg">
+            <button id="btn-era-be" onclick="setEra(true)" class="px-4 py-1 sm:py-1.5 text-[11px] sm:text-xs font-bold rounded-md bg-purple-400 text-white shadow-sm transition-all duration-200">พ.ศ.</button>
+            <button id="btn-era-ce" onclick="setEra(false)" class="px-4 py-1 sm:py-1.5 text-[11px] sm:text-xs font-bold rounded-md text-gray-500 hover:text-gray-700 transition-all duration-200">ค.ศ.</button>
+        </div>
+    </div>
+
     <!-- TAB NAVIGATION -->
     <div class="w-full max-w-4xl bg-white rounded-xl shadow-sm p-1.5 flex gap-1.5 sticky top-2 z-40 border border-gray-200">
-        <!-- Forward Tab -->
         <button onclick="switchTab('forward')" id="tab-btn-forward" class="flex-1 py-2 sm:py-3 rounded-lg text-xs sm:text-sm font-bold transition-all duration-200 flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 bg-[#3C79F5] text-white shadow-md">
             <i class="fas fa-pills text-sm sm:text-base"></i> <span class="leading-tight text-center">คำนวณจำนวนยา</span>
         </button>
-        <!-- Reverse Tab -->
         <button onclick="switchTab('reverse')" id="tab-btn-reverse" class="relative flex-1 py-2 sm:py-3 rounded-lg text-xs sm:text-sm font-bold transition-all duration-200 flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 text-gray-500 hover:bg-gray-50">
             <span class="absolute top-0.5 left-1 text-[8px] sm:text-[9px] bg-yellow-100 text-yellow-800 px-1 py-0.5 rounded leading-none hidden sm:block">คำนวณย้อนกลับ</span>
-            <i class="fas fa-calendar-alt text-sm sm:text-base"></i> <span class="leading-tight text-center">คำนวณวันนัด<span class="hidden sm:inline">จากจำนวนยา</span></span>
+            <i class="fas fa-calendar-alt text-sm sm:text-base"></i> <span class="leading-tight text-center">คำนวณวันนัด</span>
         </button>
     </div>
 
     <!-- ส่วนที่ 1: คำนวณจำนวนยาตามวันนัด -->
     <div id="tab-content-forward" class="tab-content active w-full max-w-4xl">
         <div class="bg-white rounded-2xl shadow-lg overflow-hidden relative">
-            <!-- Header Background: #3C79F5 -->
             <div class="bg-[#3C79F5] p-4 sm:p-6 text-center relative">
                 <h1 class="text-xl sm:text-2xl font-bold text-white">💊 คำนวณจำนวนยาตามวันนัด</h1>
                 <p class="text-white/90 text-xs sm:text-sm mt-1">วางแผนการใช้ยาจนถึงวันนัด</p>
@@ -137,17 +113,28 @@
 
             <div class="p-4 sm:p-6 space-y-4 sm:space-y-6">
                 <div class="bg-gray-50 p-3 sm:p-4 rounded-xl border border-gray-100">
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mb-3">
                         <div>
-                            <label class="block text-xs sm:text-sm font-semibold text-gray-700 mb-1">วันที่เริ่ม (วันนี้)</label>
-                            <input type="date" id="startDate" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#3C79F5] outline-none bg-white text-center text-sm sm:text-base" onchange="calculateMeds(); updateDurationPreview();">
+                            <label class="block text-xs sm:text-sm font-semibold text-gray-700 mb-1">วันที่เริ่ม (วันที่ตรวจ)</label>
+                            <input type="text" id="startDate" placeholder="เลือกวันที่เริ่ม" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#3C79F5] outline-none bg-white text-center text-sm sm:text-base cursor-pointer font-bold text-gray-700">
                         </div>
                         <div>
-                            <label class="block text-xs sm:text-sm font-semibold text-gray-700 mb-1">วันนัดหมาย</label>
-                            <input type="date" id="endDate" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#3C79F5] outline-none bg-white text-center text-sm sm:text-base" onchange="calculateMeds(); updateDurationPreview();">
+                            <label class="block text-xs sm:text-sm font-semibold text-gray-700 mb-1">วันนัดหมาย (เป้าหมาย)</label>
+                            <input type="text" id="endDate" placeholder="เลือกปฏิทิน หรือระบุเวลาด้านล่าง" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#3C79F5] outline-none bg-white text-center text-sm sm:text-base cursor-pointer font-bold text-gray-700">
                         </div>
                     </div>
                     
+                    <!-- NEW: Shortcut ระบุระยะเวลา -->
+                    <div class="flex flex-wrap items-center justify-center sm:justify-start gap-2 bg-blue-50/70 p-2.5 sm:p-3 rounded-lg border border-blue-200 mb-3">
+                        <label class="text-xs sm:text-sm font-bold text-blue-800 whitespace-nowrap"><i class="fas fa-forward mr-1"></i> หรือ นัดล่วงหน้า:</label>
+                        <input type="number" id="quickDurationValue" placeholder="ระบุจำนวน (ตัวเลข)" min="1" class="w-36 sm:w-44 p-1.5 border border-blue-300 rounded-md focus:ring-2 focus:ring-[#3C79F5] outline-none text-center text-sm sm:text-base font-bold text-blue-700 shadow-inner" oninput="applyQuickDuration()">
+                        <select id="quickDurationUnit" class="p-1.5 border border-blue-300 rounded-md text-xs sm:text-sm font-bold bg-white text-gray-700 focus:ring-2 focus:ring-[#3C79F5] outline-none cursor-pointer shadow-sm" onchange="applyQuickDuration()">
+                            <option value="days" selected>วัน (Days)</option>
+                            <option value="weeks">สัปดาห์ (Weeks)</option>
+                            <option value="months">เดือน (Months)</option>
+                        </select>
+                    </div>
+
                     <div class="mt-3 flex justify-center items-center gap-2">
                         <input type="checkbox" id="includeEndDate" class="w-4 h-4 text-[#3C79F5] rounded focus:ring-[#3C79F5]" onchange="calculateMeds(); updateDurationPreview();">
                         <label for="includeEndDate" class="text-xs sm:text-sm text-gray-600 cursor-pointer italic">รวมปริมาณยาในวันนัดด้วย</label>
@@ -163,26 +150,13 @@
 
                 <div>
                     <label class="block text-xs sm:text-sm font-semibold text-gray-700 mb-3 pl-1">ปริมาณยาต่อวัน (คลิกเลือกวัน แล้วเลือกปริมาณยาจากตัวเลือกด้านล่าง)</label>
-                    
-                    <!-- ส่วนแสดงการ์ดของแต่ละวัน (7 วัน) เปลี่ยนมาใช้ flex เพื่อจัดให้อยู่กึ่งกลาง -->
-                    <div id="daysList" class="flex flex-wrap justify-center gap-1.5 sm:gap-2 mb-4">
-                        <!-- Days Cards Generated by JS -->
-                    </div>
-
-                    <!-- แผงปุ่มกดรวม (Shared Options Panel) จัด 2 แถวแบบ Flex Center -->
+                    <div id="daysList" class="flex flex-wrap justify-center gap-1.5 sm:gap-2 mb-4"></div>
                     <div id="sharedOptionsPanel" class="hidden bg-blue-50 border border-blue-200 rounded-xl p-2.5 sm:p-4 animate-fade-in relative shadow-inner mx-auto max-w-2xl mt-2">
                         <div class="flex justify-between items-center mb-2.5">
                             <span class="text-xs sm:text-sm font-bold text-gray-700" id="sharedOptionsTitle">เลือกปริมาณยาสำหรับ...</span>
-                            <button onclick="closeSharedOptions()" class="text-gray-400 hover:text-red-500 bg-white rounded-full w-6 h-6 flex items-center justify-center shadow-sm">
-                                <i class="fas fa-times text-xs"></i>
-                            </button>
+                            <button onclick="closeSharedOptions()" class="text-gray-400 hover:text-red-500 bg-white rounded-full w-6 h-6 flex items-center justify-center shadow-sm"><i class="fas fa-times text-xs"></i></button>
                         </div>
-                        <!-- ใช้ Flex-wrap และ justify-center พร้อมจำกัดความกว้าง เพื่อให้แบ่ง 7 และ 6 ตัวพอดี -->
-                        <div class="flex flex-wrap justify-center gap-1.5 sm:gap-2" id="sharedOptionsGrid">
-                            <!-- Options Generated by JS -->
-                        </div>
-                        
-                        <!-- ปุ่ม นำไปใช้กับทุกวัน (จะแสดงก็ต่อเมื่อมีการเลือกตัวเลขแล้ว) -->
+                        <div class="flex flex-wrap justify-center gap-1.5 sm:gap-2" id="sharedOptionsGrid"></div>
                         <div id="applyAllContainer" class="mt-3 pt-3 border-t border-blue-200/60 flex justify-center hidden animate-fade-in">
                             <button onclick="applyToAllDays()" class="text-xs sm:text-sm bg-white border-2 border-[#3C79F5]/40 text-[#3C79F5] hover:bg-[#3C79F5] hover:border-[#3C79F5] hover:text-white font-bold py-1.5 sm:py-2 px-4 sm:px-6 rounded-xl flex items-center gap-2 transition-all shadow-sm active:scale-95">
                                 <i class="fas fa-copy"></i> นำไปใช้กับทุกวัน (<span id="applyAllValue"></span>)
@@ -193,14 +167,12 @@
 
                 <div id="resultArea" class="hidden animate-fade-in relative group mt-4 sm:mt-6">
                     <div class="bg-green-50 border-2 border-green-100 rounded-xl p-4 sm:p-6 text-center shadow-sm relative">
-                        <!-- Save Status Indicator -->
                         <div id="saveStatus1" class="absolute top-2 right-2 text-green-500 text-[10px] sm:text-xs font-bold opacity-0 flex items-center gap-1 pointer-events-none">
                             <i class="fas fa-save"></i> บันทึกแล้ว
                         </div>
-
                         <p class="text-gray-600 font-medium mb-1 text-sm sm:text-base">สรุปต้องใช้ยาทั้งหมด</p>
                         <div class="text-4xl sm:text-5xl font-bold text-green-700 mb-3">
-                            <span id="totalPills">0</span> <span class="text-xl sm:text-2xl font-normal text-green-600">เม็ด/แคปซูล/หน่วยนับอื่น ๆ</span>
+                            <span id="totalPills">0</span> <span class="text-xl sm:text-2xl font-normal text-green-600">เม็ด/แคปซูล/หน่วยอื่น</span>
                         </div>
                         <div class="inline-block bg-white px-3 sm:px-4 py-1 sm:py-1.5 rounded-full border border-green-200 shadow-sm">
                             <p class="text-xs sm:text-sm text-gray-600 font-medium" id="durationText">ระยะเวลา 0 วัน</p>
@@ -210,20 +182,20 @@
             </div>
         </div>
 
-        <!-- ส่วนที่ 3: Memory Note (History) -->
+        <!-- History -->
         <div class="bg-white rounded-2xl shadow-lg overflow-hidden border-t-8 border-gray-500">
             <div class="bg-gray-700 p-3 sm:p-4 text-white flex justify-between items-center">
-                <h1 class="text-base sm:text-lg font-bold"><i class="fas fa-history mr-2"></i> บันทึกช่วยจำ (7 รายการล่าสุด)</h1>
-                <button type="button" onclick="toggleModal()" class="text-xs bg-gray-600 hover:bg-red-500 text-white px-2.5 sm:px-3 py-1 sm:py-1.5 rounded transition shadow">ล้างประวัติ</button>
+                <h1 class="text-base sm:text-lg font-bold"><i class="fas fa-history mr-2"></i> บันทึกช่วยจำ (10 รายการล่าสุด)</h1>
+                <button type="button" onclick="toggleModal()" class="text-xs bg-gray-600 hover:bg-red-500 text-white px-2.5 sm:px-3 py-1 sm:py-1.5 rounded transition shadow">ล้างประวัติทั้งหมด</button>
             </div>
-            <div class="p-3 sm:p-4 bg-gray-50">
-                <ul id="historyList" class="space-y-2">
-                    <li class="text-center text-gray-400 text-xs sm:text-sm py-4">ยังไม่มีรายการบันทึก</li>
+            <div class="p-3 sm:p-4 bg-gray-50/50">
+                <ul id="historyList" class="space-y-2 sm:space-y-3">
+                    <li class="text-center text-gray-400 text-xs sm:text-sm py-6">ยังไม่มีรายการบันทึก</li>
                 </ul>
             </div>
         </div>
         
-        <!-- Credit Tab 1 -->
+        <!-- Credit -->
         <div class="text-right text-[10px] sm:text-[11px] text-gray-400 px-2 mt-1 leading-relaxed">
             พัฒนาโดย ภก.นราวิชญ์ คำยวง<br>กลุ่มงานเภสัชกรรม โรงพยาบาลอุทัย
         </div>
@@ -233,16 +205,9 @@
     <div id="tab-content-reverse" class="tab-content w-full max-w-4xl">
         <div class="bg-white rounded-2xl shadow-lg overflow-hidden border-t-8 border-[#FDD771] relative">
             <div class="bg-[#FDD771] p-4 sm:p-6 text-center text-slate-800 relative">
-                <!-- Badge -->
-                <span class="absolute top-3 left-3 text-[11px] bg-white/60 px-2 py-1 rounded-md text-slate-900 font-medium tracking-wide">
-                    คำนวณย้อนกลับ
-                </span>
-                
-                <h1 class="text-xl sm:text-2xl font-bold mt-1 sm:mt-2">คำนวณวันนัด - จากจำนวนยาที่ได้รับ</h1>
-                <p class="text-slate-700 text-xs sm:text-sm mt-1">
-                    กรอกจำนวนยาและวันที่รับ เพื่อดูวันที่ยาจะหมด <br>
-                    <span class="text-[9px] sm:text-[10px] opacity-80">(* เป็นการคาดการณ์ อาจไม่ใช่วันนัดของผู้ป่วย ในกรณีที่ไม่ได้ทานยาชนิดนั้นทุกวัน)</span>
-                </p>
+                <span class="absolute top-3 left-3 text-[11px] bg-white/60 px-2 py-1 rounded-md text-slate-900 font-medium tracking-wide">หาวันนัด</span>
+                <h1 class="text-xl sm:text-2xl font-bold mt-1 sm:mt-2"><i class="fas fa-pills mr-2 text-yellow-700"></i> คำนวณวันนัด - จากจำนวนยาที่ได้รับ</h1>
+                <p class="text-slate-700 text-xs sm:text-sm mt-1">กรอกจำนวนยาและวันที่รับ เพื่อดูวันที่ยาจะหมด</p>
             </div>
 
             <div class="p-4 sm:p-6 space-y-4 sm:space-y-6">
@@ -251,7 +216,7 @@
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 items-end">
                         <div>
                             <label class="block text-xs sm:text-sm font-semibold text-slate-700 mb-1.5 sm:mb-2">วันที่รับยา</label>
-                            <input type="date" id="reverseStartDate" class="w-full p-2.5 sm:p-3 border-2 border-[#FDD771]/50 rounded-xl focus:ring-2 focus:ring-[#FDD771] outline-none bg-white text-center text-base sm:text-lg font-medium shadow-sm" onchange="calculateAllReverse()">
+                            <input type="text" id="reverseStartDate" placeholder="เลือกวันที่รับยา" class="w-full p-2.5 sm:p-3 border-2 border-[#FDD771]/50 rounded-xl focus:ring-2 focus:ring-[#FDD771] outline-none bg-white text-center text-base sm:text-lg font-bold text-gray-700 cursor-pointer shadow-sm">
                         </div>
                         <div>
                             <label class="block text-xs sm:text-sm font-semibold text-slate-700 mb-1.5 sm:mb-2">ระบุจำนวนยา (เม็ด/แคปซูล/หน่วยนับอื่น ๆ)</label>
@@ -260,19 +225,13 @@
                     </div>
                     
                     <div class="mt-4 sm:mt-5 pt-3 sm:pt-4 border-t border-yellow-200/60 flex justify-end">
-                        <button onclick="resetReverse()" class="text-yellow-700 hover:text-red-600 flex items-center gap-1.5 text-xs sm:text-sm font-medium px-3 py-1.5 rounded-lg hover:bg-red-50 transition-all" title="เริ่มใหม่ (Reset)">
-                            <i class="fas fa-redo-alt"></i> ล้างค่าทั้งหมด
-                        </button>
+                        <button onclick="resetReverse()" class="text-yellow-700 hover:text-red-600 flex items-center gap-1.5 text-xs sm:text-sm font-medium px-3 py-1.5 rounded-lg hover:bg-red-50 transition-all" title="เริ่มใหม่ (Reset)"><i class="fas fa-redo-alt"></i> ล้างค่าทั้งหมด</button>
                     </div>
                 </div>
 
                 <!-- Custom Calculation Section -->
                 <div class="bg-white border-2 border-dashed border-[#FDD771] p-4 sm:p-5 rounded-xl">
-                    <h3 class="text-base sm:text-lg font-bold text-slate-700 mb-3 sm:mb-4 flex items-center gap-2">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 sm:h-5 sm:w-5 text-yellow-600" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clip-rule="evenodd" /></svg>
-                        คำนวณแบบกำหนดเอง (Custom)
-                    </h3>
-                    
+                    <h3 class="text-base sm:text-lg font-bold text-slate-700 mb-3 sm:mb-4 flex items-center gap-2"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 sm:h-5 sm:w-5 text-yellow-600" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clip-rule="evenodd" /></svg>คำนวณแบบกำหนดเอง (Custom)</h3>
                     <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mb-3 sm:mb-4">
                         <div>
                             <label class="block text-xs font-semibold text-gray-500 mb-1">จำนวนยา/มื้อ</label>
@@ -293,15 +252,11 @@
                         </div>
                     </div>
 
-                    <!-- Specific Days Selector -->
                     <div id="weekDaysSelector" class="hidden mb-3 sm:mb-4 p-2 sm:p-3 bg-gray-50 rounded-lg border border-gray-100">
                         <p class="text-xs text-gray-500 mb-2 text-center">เลือกวันที่ทานยา:</p>
-                        <div class="flex flex-wrap justify-center gap-1.5 sm:gap-2">
-                            <!-- Days generated by JS -->
-                        </div>
+                        <div class="flex flex-wrap justify-center gap-1.5 sm:gap-2"></div>
                     </div>
 
-                    <!-- Custom Result Display -->
                     <div id="customResult" class="bg-[#FDD771]/20 rounded-lg p-3 sm:p-4 text-center hidden relative">
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                             <div class="bg-white rounded-lg p-2 shadow-sm border border-[#FDD771]/30">
@@ -318,7 +273,6 @@
                     </div>
                 </div>
 
-                <!-- Standard Table Section (มี overflow-x-auto) -->
                 <div class="border border-gray-200 rounded-xl shadow-sm table-container bg-white w-full">
                     <table class="w-full text-left border-collapse min-w-[450px]">
                         <thead class="bg-gray-100 border-b border-gray-200 sticky top-0 z-10 shadow-sm">
@@ -329,109 +283,144 @@
                             </tr>
                         </thead>
                         <tbody id="reverseResultBody" class="divide-y divide-gray-100">
-                            <tr>
-                                <td colspan="3" class="p-6 sm:p-8 text-center text-gray-400 text-sm">กรุณากรอกจำนวนยาด้านบน</td>
-                            </tr>
+                            <tr><td colspan="3" class="p-6 sm:p-8 text-center text-gray-400 text-sm">กรุณากรอกจำนวนยาด้านบน</td></tr>
                         </tbody>
                     </table>
                 </div>
             </div>
         </div>
 
-        <!-- Credit Tab 2 -->
         <div class="text-right text-[10px] sm:text-[11px] text-gray-400 px-2 mt-1 leading-relaxed">
             พัฒนาโดย ภก.นราวิชญ์ คำยวง<br>กลุ่มงานเภสัชกรรม โรงพยาบาลอุทัย
         </div>
     </div>
 
-    <!-- Visitor Counter แบบ Firebase Real-time -->
-    <footer class="text-center text-gray-500 mt-6 mb-8 flex flex-col items-center">
-        <p class="mb-2 text-xs sm:text-sm font-medium">ยอดการเข้าใช้งานสะสม</p>
-        <div class="inline-flex items-center gap-2.5 py-2 px-4 bg-white rounded-full shadow-sm border border-gray-200">
-            <div class="bg-blue-100 text-[#3C79F5] w-6 h-6 rounded-full flex items-center justify-center shrink-0">
-                <i class="fas fa-eye text-xs"></i>
-            </div>
-            <div class="flex items-baseline gap-1">
-                <span id="visitorCountText" class="font-bold text-lg text-gray-700 leading-none">กำลังโหลด...</span>
-                <span class="text-gray-500 text-[11px] sm:text-xs">ครั้ง</span>
-            </div>
-        </div>
-    </footer>
+<!-- Flatpickr JS & Thai Locale -->
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/th.js"></script>
 
-<!-- Firebase SDK (ใช้ Type Module เพื่อไม่ให้กวนกับสคริปต์เก่า) -->
-<script type="module">
-    // นำเข้าฟังก์ชันที่จำเป็นจาก Firebase SDK
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-    import { getFirestore, doc, getDoc, setDoc, increment } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+<script>
+    let forwardSaveTimeout;
+    const AUTO_SAVE_DELAY = 2000; 
 
-    // ⚠️ นำ firebaseConfig ที่ได้จากขั้นตอนที่ 1 มาวางทับตรงนี้ ⚠️
-    const firebaseConfig = {
-        apiKey: "AIzaSyBapwTW8Huf7zcmetKRkIyNU86txcmAGmw",
-        authDomain: "appointed-day-calc.firebaseapp.com",
-        projectId: "appointed-day-calc",
-        storageBucket: "appointed-day-calc.firebasestorage.app",
-        messagingSenderId: "101497292557",
-        appId: "1:101497292557:web:1cdd788465d21809d4d244",
-        measurementId: "G-Y9QCJKEKJP"
+    let activeEditDay = null; 
+    let selectedDosages = { 0: "-", 1: "-", 2: "-", 3: "-", 4: "-", 5: "-", 6: "-" };
+    const dosageOptions = ["-", "1/4", "1/2", "3/4", "1", "1.5", "2", "2.5", "3", "3.5", "4", "4.5", "5"];
+    
+    let isBE = true; 
+    let fpStart, fpEnd, fpReverseStart;
+
+    const daysOfWeek = [
+        { id: 0, name: "อาทิตย์", short: "อา.", color: "text-red-700", border: "border-red-500" },
+        { id: 1, name: "จันทร์", short: "จ.", color: "text-yellow-700", border: "border-yellow-400" },
+        { id: 2, name: "อังคาร", short: "อ.", color: "text-pink-700", border: "border-pink-500" },
+        { id: 3, name: "พุธ", short: "พ.", color: "text-green-700", border: "border-green-500" },
+        { id: 4, name: "พฤหัสบดี", short: "พฤ.", color: "text-orange-700", border: "border-orange-500" },
+        { id: 5, name: "ศุกร์", short: "ศ.", color: "text-blue-700", border: "border-blue-500" },
+        { id: 6, name: "เสาร์", short: "ส.", color: "text-purple-700", border: "border-purple-500" }
+    ];
+
+    window.onload = function() {
+        checkAndResetHistoryMidnight();
+        initCalendars(); 
+        
+        resetForward();
+        resetReverse();
+        
+        renderWeekDaysSelector();
+        loadHistory();
+        switchTab('forward');
     };
 
-    // เริ่มต้นการเชื่อมต่อ Firebase
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-    
-    // อ้างอิงไปยังกล่องข้อมูล (Document) ชื่อ 'visitors' ในตาราง 'statistics'
-    const counterRef = doc(db, "statistics", "visitors");
+    function initCalendars() {
+        if (fpStart) fpStart.destroy();
+        if (fpEnd) fpEnd.destroy();
+        if (fpReverseStart) fpReverseStart.destroy();
 
-    async function updateAndFetchCounter() {
-        try {
-            // ตรวจสอบว่า Session นี้เคยนับไปแล้วหรือยัง (ป้องกันยอดเด้งเวลากด Refresh)
-            const hasVisited = sessionStorage.getItem('hasVisited_Firebase');
+        const config = {
+            locale: isBE ? "th" : "default", 
+            altInput: true,
+            dateFormat: "Y-m-d", 
+            disableMobile: true, 
+            onChange: function(selectedDates, dateStr, instance) {
+                if (instance.element.id === 'startDate' || instance.element.id === 'endDate') {
+                    // หากผู้ใช้เลือกวันนัดหมายแบบ Manual ให้เคลียร์ช่องตัวเลขลัดออกเพื่อไม่ให้สับสน
+                    if (instance.element.id === 'endDate') {
+                        document.getElementById('quickDurationValue').value = '';
+                    } else if (instance.element.id === 'startDate' && document.getElementById('quickDurationValue').value) {
+                        // หากเปลี่ยนวันเริ่ม และมีตัวเลขลัดค้างอยู่ ให้คำนวณวันนัดหมายใหม่ทันที
+                        applyQuickDuration();
+                    }
+                    calculateMeds(); updateDurationPreview();
+                } else if (instance.element.id === 'reverseStartDate') {
+                    calculateAllReverse();
+                }
+            },
+            formatDate: function(date, format, locale) {
+                let year = date.getFullYear();
+                const d = date.getDate();
+                if (isBE) {
+                    year += 543;
+                    const m = flatpickr.l10ns.th.months.longhand[date.getMonth()];
+                    return `${d} ${m} ${year}`;
+                } else {
+                    const m = flatpickr.l10ns.default.months.longhand[date.getMonth()];
+                    return `${d} ${m} ${year}`;
+                }
+            },
+            onReady: function(d, s, instance) { instance.currentYearElement.disabled = true; updateYearUI(instance); },
+            onYearChange: function(d, s, instance) { updateYearUI(instance); },
+            onMonthChange: function(d, s, instance) { updateYearUI(instance); },
+            onOpen: function(d, s, instance) { updateYearUI(instance); }
+        };
 
-            if (!hasVisited) {
-                // หากยังไม่เคยนับ -> สั่งให้ยอด + 1 (และสร้างกล่องข้อมูลให้อัตโนมัติหากยังไม่มี)
-                await setDoc(counterRef, { count: increment(1) }, { merge: true });
-                sessionStorage.setItem('hasVisited_Firebase', 'true');
-            }
+        fpStart = flatpickr("#startDate", config);
+        fpEnd = flatpickr("#endDate", config);
+        fpReverseStart = flatpickr("#reverseStartDate", config);
+    }
 
-            // ดึงค่ายอดล่าสุดมาแสดงผล
-            const docSnap = await getDoc(counterRef);
-            if (docSnap.exists()) {
-                document.getElementById('visitorCountText').innerText = docSnap.data().count.toLocaleString();
-            } else {
-                // กรณีฐานข้อมูลว่างเปล่า (พึ่งสร้างครั้งแรก)
-                document.getElementById('visitorCountText').innerText = "1";
-            }
-        } catch (error) {
-            console.error("Firebase Error:", error);
-            document.getElementById('visitorCountText').innerText = "Error";
+    function updateYearUI(instance) {
+        if (!instance || !instance.currentYearElement) return;
+        setTimeout(() => {
+            if (isBE) { instance.currentYearElement.value = instance.currentYear + 543; } 
+            else { instance.currentYearElement.value = instance.currentYear; }
+        }, 10);
+    }
+
+    function setEra(toBE) {
+        isBE = toBE;
+        document.getElementById('btn-era-be').className = isBE ? "px-4 py-1 sm:py-1.5 text-[11px] sm:text-xs font-bold rounded-md bg-purple-400 text-white shadow-sm transition-all duration-200" : "px-4 py-1 sm:py-1.5 text-[11px] sm:text-xs font-bold rounded-md text-gray-500 hover:text-gray-700 transition-all duration-200";
+        document.getElementById('btn-era-ce').className = !isBE ? "px-4 py-1 sm:py-1.5 text-[11px] sm:text-xs font-bold rounded-md bg-purple-400 text-white shadow-sm transition-all duration-200" : "px-4 py-1 sm:py-1.5 text-[11px] sm:text-xs font-bold rounded-md text-gray-500 hover:text-gray-700 transition-all duration-200";
+        
+        const startD = fpStart && fpStart.selectedDates[0] ? fpStart.selectedDates[0] : null;
+        const endD = fpEnd && fpEnd.selectedDates[0] ? fpEnd.selectedDates[0] : null;
+        const revStartD = fpReverseStart && fpReverseStart.selectedDates[0] ? fpReverseStart.selectedDates[0] : null;
+
+        initCalendars();
+
+        if (startD) fpStart.setDate(startD);
+        if (endD) fpEnd.setDate(endD);
+        if (revStartD) fpReverseStart.setDate(revStartD);
+
+        calculateMeds(); updateDurationPreview(); calculateAllReverse(); loadHistory(); 
+    }
+
+    function checkAndResetHistoryMidnight() {
+        const now = new Date();
+        const todayKey = now.getFullYear() + '-' + (now.getMonth() + 1) + '-' + now.getDate();
+        const lastDate = localStorage.getItem('medCalcHistoryDate');
+        if (lastDate !== todayKey) {
+            localStorage.removeItem('medCalcHistory');
+            localStorage.setItem('medCalcHistoryDate', todayKey);
         }
     }
 
-    // สั่งให้ทำงานเมื่อหน้าเว็บพร้อม
-    updateAndFetchCounter();
-</script>
-
-<script>
-    // Global variables
-    let forwardSaveTimeout;
-    const AUTO_SAVE_DELAY = 2000; // 2 seconds
-
-    // --- State for Section 1 (Forward Calc) ---
-    let activeEditDay = null; // เก็บไอดีของวันที่กำลังถูกแก้ไข
-    let selectedDosages = {
-        0: "-", 1: "-", 2: "-", 3: "-", 4: "-", 5: "-", 6: "-"
-    };
-
-    const dosageOptions = ["-", "1/4", "1/2", "3/4", "1", "1.5", "2", "2.5", "3", "3.5", "4", "4.5", "5"];
-
-    // Tabs Logic
     function switchTab(tab) {
         const baseClass = "flex-1 py-2 sm:py-3 rounded-lg text-xs sm:text-sm font-bold transition-all duration-200 flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2";
         const inactiveClass = baseClass + " text-gray-500 hover:bg-gray-50";
         
         document.getElementById('tab-btn-forward').className = inactiveClass;
         document.getElementById('tab-btn-reverse').className = "relative " + inactiveClass;
-        
         document.getElementById('tab-content-forward').classList.remove('active');
         document.getElementById('tab-content-reverse').classList.remove('active');
 
@@ -444,78 +433,47 @@
         }
     }
 
-    // --- PART 1: Forward Calculation ---
-    // Update Array for Short names on Mobile
-    const daysOfWeek = [
-        { id: 0, name: "อาทิตย์", short: "อา.", color: "text-red-700", border: "border-red-500" },
-        { id: 1, name: "จันทร์", short: "จ.", color: "text-yellow-700", border: "border-yellow-400" },
-        { id: 2, name: "อังคาร", short: "อ.", color: "text-pink-700", border: "border-pink-500" },
-        { id: 3, name: "พุธ", short: "พ.", color: "text-green-700", border: "border-green-500" },
-        { id: 4, name: "พฤหัสบดี", short: "พฤ.", color: "text-orange-700", border: "border-orange-500" },
-        { id: 5, name: "ศุกร์", short: "ศ.", color: "text-blue-700", border: "border-blue-500" },
-        { id: 6, name: "เสาร์", short: "ส.", color: "text-purple-700", border: "border-purple-500" }
-    ];
+    // --- Tab 1: Forward Calc & Quick Duration ---
+    function applyQuickDuration() {
+        const startDate = fpStart ? fpStart.selectedDates[0] : null;
+        const val = parseFloat(document.getElementById('quickDurationValue').value);
+        const unit = document.getElementById('quickDurationUnit').value;
 
-    // ฟังก์ชันตรวจสอบและล้างประวัติเมื่อขึ้นวันใหม่ (หลังเที่ยงคืน)
-    function checkAndResetHistoryMidnight() {
-        const now = new Date();
-        const todayKey = now.getFullYear() + '-' + (now.getMonth() + 1) + '-' + now.getDate();
-        const lastDate = localStorage.getItem('medCalcHistoryDate');
-        
-        if (lastDate !== todayKey) {
-            // ถ้ารหัสวันไม่ตรงกัน (ขึ้นวันใหม่) ให้ล้างประวัติ
-            localStorage.removeItem('medCalcHistory');
-            // และอัปเดตวันที่ล่าสุดเป็นวันนี้
-            localStorage.setItem('medCalcHistoryDate', todayKey);
+        if (!startDate || isNaN(val) || val <= 0) return;
+
+        const targetDate = new Date(startDate);
+        if (unit === 'days') {
+            targetDate.setDate(targetDate.getDate() + val);
+        } else if (unit === 'weeks') {
+            targetDate.setDate(targetDate.getDate() + (val * 7));
+        } else if (unit === 'months') {
+            // แพทย์และเภสัชกรรมนับ 1 เดือน = 30 วันถ้วน เสมอ (ป้องกันยอดวันคลาดเคลื่อนตามปฏิทิน)
+            targetDate.setDate(targetDate.getDate() + (val * 30));
+        }
+
+        if (fpEnd) {
+            fpEnd.setDate(targetDate);
+            calculateMeds();
+            updateDurationPreview();
         }
     }
 
-    window.onload = function() {
-        const today = new Date().toISOString().split('T')[0];
-        
-        checkAndResetHistoryMidnight(); // ตรวจสอบและล้างประวัติหากข้ามวันแล้ว
-        
-        resetForward();
-        resetReverse();
-        
-        renderWeekDaysSelector();
-        loadHistory();
-        
-        switchTab('forward');
-    };
-
-    // --- Shared Options Panel Logic ---
     function selectEditDay(dayId) {
-        if (activeEditDay === dayId) {
-            activeEditDay = null; // ปิดถ้ากดซ้ำวันเดิม
-        } else {
-            activeEditDay = dayId; // เปลี่ยนเป็นวันใหม่
-        }
-        renderDayList();
-        renderSharedOptions();
+        activeEditDay = activeEditDay === dayId ? null : dayId; 
+        renderDayList(); renderSharedOptions();
     }
 
-    function closeSharedOptions() {
-        activeEditDay = null;
-        renderDayList();
-        renderSharedOptions();
-    }
+    function closeSharedOptions() { activeEditDay = null; renderDayList(); renderSharedOptions(); }
 
     function selectSharedDosage(opt) {
         if (activeEditDay === null) return;
-        
         selectedDosages[activeEditDay] = opt;
-        
-        renderDayList();
-        renderSharedOptions(); 
-        calculateMeds();
+        renderDayList(); renderSharedOptions(); calculateMeds();
     }
 
     function renderDayList() {
         const container = document.getElementById('daysList');
         let html = '';
-        
-        // ชุดสีสำหรับปริมาณยาที่แตกต่างกัน (จะเรียงลำดับสีใหม่ตามจำนวนที่ถูกเลือก)
         const colorPalette = [
             { main: 'bg-[#3C79F5] border-[#3C79F5]', bg: 'bg-blue-50/50 ring-[#3C79F5]/30' },
             { main: 'bg-teal-500 border-teal-500', bg: 'bg-teal-50/50 ring-teal-500/30' },
@@ -525,34 +483,21 @@
             { main: 'bg-emerald-500 border-emerald-500', bg: 'bg-emerald-50/50 ring-emerald-500/30' }
         ];
 
-        // ค้นหาค่าปริมาณยาที่ไม่ซ้ำกันทั้งหมด (ตัดค่า "-" ออก) เพื่อจับคู่สี
         let uniqueVals = [...new Set(Object.values(selectedDosages))].filter(v => v !== "-");
         let valueColorMap = {};
-        uniqueVals.forEach((val, index) => {
-            valueColorMap[val] = colorPalette[index % colorPalette.length];
-        });
+        uniqueVals.forEach((val, index) => { valueColorMap[val] = colorPalette[index % colorPalette.length]; });
         
         daysOfWeek.forEach(day => {
             const currentVal = selectedDosages[day.id];
             const hasValue = currentVal !== "-";
             const isEditing = activeEditDay === day.id;
-            
-            // สไตล์เมื่อถูกเลือกให้แก้ไข (เปลี่ยนมาใช้คลาสกระพริบ active-ring-pulse)
             const baseBg = isEditing ? 'active-ring-pulse shadow-md scale-105 z-10' : 'hover:shadow-md shadow-sm border-gray-100';
-            
-            // กำหนดสีเริ่มต้น
-            let colorBg = 'bg-white';
-            let displayBg = 'bg-gray-50 text-gray-400 border-gray-200';
-
-            // ถ้ามีการเลือกปริมาณยา ให้ดึงชุดสีจาก Map
+            let colorBg = 'bg-white'; let displayBg = 'bg-gray-50 text-gray-400 border-gray-200';
             if (hasValue) {
                 const palette = valueColorMap[currentVal];
                 displayBg = `${palette.main} text-white`;
-                if (!isEditing) {
-                    colorBg = `${palette.bg} ring-1`;
-                }
+                if (!isEditing) colorBg = `${palette.bg} ring-1`;
             }
-
             html += `
                 <div onclick="selectEditDay(${day.id})" class="w-[22%] sm:w-auto sm:flex-1 rounded-xl border-t-4 ${day.border} border-x border-b ${baseBg} ${colorBg} p-1.5 sm:p-3 flex flex-col items-center justify-center space-y-1 sm:space-y-2 cursor-pointer transition-all transform select-none relative">
                     ${isEditing ? '<div class="absolute -top-1.5 -right-1.5 w-3.5 h-3.5 bg-[#1E293B] rounded-full border-2 border-white animate-bounce shadow-sm z-20"></div>' : ''}
@@ -571,51 +516,30 @@
         const applyAllContainer = document.getElementById('applyAllContainer');
         const applyAllValue = document.getElementById('applyAllValue');
 
-        if (activeEditDay === null) {
-            panel.classList.add('hidden');
-            return;
-        }
-
+        if (activeEditDay === null) { panel.classList.add('hidden'); return; }
         panel.classList.remove('hidden');
         const dayInfo = daysOfWeek.find(d => d.id === activeEditDay);
         title.innerHTML = `ปริมาณยาสำหรับ <span class="${dayInfo.color} font-bold text-sm sm:text-base ml-1">วัน${dayInfo.name}</span>`;
-
         const currentVal = selectedDosages[activeEditDay];
         let html = '';
         dosageOptions.forEach(opt => {
-            const isSelected = currentVal === opt;
-            const optBg = isSelected 
-                ? 'bg-[#3C79F5] text-white shadow-sm ring-1 ring-[#3C79F5] ring-offset-1' 
-                : 'bg-white text-gray-700 hover:bg-blue-50 hover:text-[#3C79F5] border border-gray-200';
-            
-            // ใช้ความกว้าง w-10 (40px) ถึง w-14 (56px) เพื่อให้ตัวเลือก 13 อัน จัดได้ 7 ตัวต่อ 1 แถวอย่างพอดี
+            const optBg = currentVal === opt ? 'bg-[#3C79F5] text-white shadow-sm ring-1 ring-[#3C79F5] ring-offset-1' : 'bg-white text-gray-700 hover:bg-blue-50 hover:text-[#3C79F5] border border-gray-200';
             html += `<button onclick="selectSharedDosage('${opt}')" class="w-[12%] min-w-[40px] sm:min-w-[48px] md:min-w-[56px] py-1.5 sm:py-2 rounded-md text-xs sm:text-sm font-bold transition-all active:scale-95 flex items-center justify-center ${optBg}">${opt}</button>`;
         });
         grid.innerHTML = html;
 
-        // แสดงปุ่ม "นำไปใช้กับทุกวัน" ถ้ามีการเลือกตัวเลขที่ไม่ใช่ "-"
         if (currentVal !== "-") {
-            applyAllContainer.classList.remove('hidden');
-            applyAllContainer.classList.add('flex');
-            applyAllValue.innerText = currentVal;
+            applyAllContainer.classList.remove('hidden'); applyAllContainer.classList.add('flex'); applyAllValue.innerText = currentVal;
         } else {
-            applyAllContainer.classList.add('hidden');
-            applyAllContainer.classList.remove('flex');
+            applyAllContainer.classList.add('hidden'); applyAllContainer.classList.remove('flex');
         }
     }
 
     function applyToAllDays() {
         if (activeEditDay === null) return;
         const currentVal = selectedDosages[activeEditDay];
-        
-        // กำหนดค่าให้กับทุกๆ วัน
-        Object.keys(selectedDosages).forEach(key => {
-            selectedDosages[key] = currentVal;
-        });
-        
-        renderDayList();
-        calculateMeds();
-        closeSharedOptions(); // ปิดแผงอัตโนมัติเมื่อกดคัดลอกเสร็จ
+        Object.keys(selectedDosages).forEach(key => { selectedDosages[key] = currentVal; });
+        renderDayList(); calculateMeds(); closeSharedOptions(); 
     }
 
     function parseDosage(value) {
@@ -627,71 +551,48 @@
     }
 
     function updateDurationPreview() {
-        const startVal = document.getElementById('startDate').value;
-        const endVal = document.getElementById('endDate').value;
+        const startDate = fpStart.selectedDates[0];
+        const endDate = fpEnd.selectedDates[0];
         const includeDay = document.getElementById('includeEndDate').checked;
         const display = document.getElementById('durationPreview');
-        if (!startVal || !endVal) {
-            display.innerText = 'เลือกวันที่เพื่อดูระยะเวลา';
-            return;
-        }
-        const startDate = new Date(startVal);
-        const endDate = new Date(endVal);
-        startDate.setHours(0,0,0,0);
-        endDate.setHours(0,0,0,0);
-        if (endDate <= startDate) {
-            display.innerHTML = '<span class="text-red-500 text-sm sm:text-base">วันนัดหมายต้องหลังจากวันเริ่มต้น</span>';
-            return;
-        }
-        const diffTime = Math.abs(endDate - startDate);
+        if (!startDate || !endDate) { display.innerText = 'เลือกวันที่เพื่อดูระยะเวลา'; return; }
+        
+        const sd = new Date(startDate); const ed = new Date(endDate);
+        sd.setHours(0,0,0,0); ed.setHours(0,0,0,0);
+        
+        if (ed <= sd) { display.innerHTML = '<span class="text-red-500 text-sm sm:text-base">วันนัดหมายต้องหลังจากวันเริ่มต้น</span>'; return; }
+        const diffTime = Math.abs(ed - sd);
         let totalDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
         if (includeDay) totalDays += 1;
-        const weeks = Math.floor(totalDays / 7);
-        const remainingDays = totalDays % 7;
+        const weeks = Math.floor(totalDays / 7); const remainingDays = totalDays % 7;
         let weekText = weeks > 0 ? `(${weeks} สัปดาห์${remainingDays > 0 ? ' ' + remainingDays + ' วัน' : ''})` : `(ไม่ถึง 1 สัปดาห์)`;
         display.innerHTML = `ระยะเวลา <span class="font-bold text-lg sm:text-xl">${totalDays}</span> วัน <span class="text-xs sm:text-sm text-gray-500 font-normal">${weekText}</span>`;
     }
 
     function calculateMeds() {
-        const startVal = document.getElementById('startDate').value;
-        const endVal = document.getElementById('endDate').value;
+        const startDate = fpStart.selectedDates[0]; const endDate = fpEnd.selectedDates[0];
         const includeDay = document.getElementById('includeEndDate').checked;
         const resultArea = document.getElementById('resultArea');
 
-        if (!startVal || !endVal) { 
-            resultArea.classList.add('hidden');
-            return; 
-        }
+        if (!startDate || !endDate) { resultArea.classList.add('hidden'); return; }
+        const sd = new Date(startDate); const ed = new Date(endDate);
+        sd.setHours(0,0,0,0); ed.setHours(0,0,0,0);
         
-        const startDate = new Date(startVal);
-        const endDate = new Date(endVal);
-        startDate.setHours(0,0,0,0);
-        endDate.setHours(0,0,0,0);
-        
-        if (endDate <= startDate) { 
-            resultArea.classList.add('hidden');
-            return; 
-        }
+        if (ed <= sd) { resultArea.classList.add('hidden'); return; }
 
-        const dosageMap = {};
-        daysOfWeek.forEach(day => { 
-            dosageMap[day.id] = parseDosage(selectedDosages[day.id]); 
-        });
+        const dosageMap = {}; daysOfWeek.forEach(day => { dosageMap[day.id] = parseDosage(selectedDosages[day.id]); });
         
-        let totalPills = 0; let dayCount = 0; let currentDate = new Date(startDate);
-        const targetDate = new Date(endDate);
-        if (includeDay) targetDate.setDate(targetDate.getDate() + 1);
+        let totalPills = 0; let dayCount = 0; let currentDate = new Date(sd);
+        const targetDate = new Date(ed); if (includeDay) targetDate.setDate(targetDate.getDate() + 1);
         
         while (currentDate < targetDate) {
             totalPills += dosageMap[currentDate.getDay()];
-            dayCount++;
-            currentDate.setDate(currentDate.getDate() + 1);
+            dayCount++; currentDate.setDate(currentDate.getDate() + 1);
         }
         
         resultArea.classList.remove('hidden');
         document.getElementById('totalPills').innerText = totalPills % 1 === 0 ? totalPills : totalPills.toFixed(2);
-        const weeks = Math.floor(dayCount / 7);
-        const remDays = dayCount % 7;
+        const weeks = Math.floor(dayCount / 7); const remDays = dayCount % 7;
         document.getElementById('durationText').innerText = `ระยะเวลาที่คำนวณ ${dayCount} วัน ${weeks > 0 ? `(${weeks} สัปดาห์ ${remDays} วัน)` : ''} ${includeDay ? '(รวมวันนัด)' : '(ไม่รวมวันนัด)'}`;
 
         clearTimeout(forwardSaveTimeout);
@@ -699,25 +600,23 @@
     }
 
     function resetForward() {
-        const today = new Date().toISOString().split('T')[0];
-        document.getElementById('startDate').value = today;
-        document.getElementById('endDate').value = "";
+        const today = new Date();
+        if (fpStart) fpStart.setDate(today);
+        if (fpEnd) fpEnd.clear();
+        document.getElementById('quickDurationValue').value = '';
+        document.getElementById('quickDurationUnit').value = 'days';
         document.getElementById('includeEndDate').checked = false;
         document.getElementById('durationPreview').innerText = "";
         document.getElementById('resultArea').classList.add('hidden');
-        
-        // Reset selected dosages to "-"
-        Object.keys(selectedDosages).forEach(key => {
-            selectedDosages[key] = "-";
-        });
-        activeEditDay = null; // ปิดแผงที่กำลังเลือกอยู่
-        renderDayList(); 
-        renderSharedOptions();
+        Object.keys(selectedDosages).forEach(key => { selectedDosages[key] = "-"; });
+        activeEditDay = null; renderDayList(); renderSharedOptions();
     }
 
+    // --- Tab 2: Reverse Calc ---
     function resetReverse() {
-        const today = new Date().toISOString().split('T')[0];
-        document.getElementById('reverseStartDate').value = today;
+        const today = new Date();
+        if (fpReverseStart) fpReverseStart.setDate(today);
+        
         document.getElementById('reversePillsInput').value = "";
         document.getElementById('reverseResultBody').innerHTML = '<tr><td colspan="3" class="p-6 sm:p-8 text-center text-gray-400 text-sm">กรุณากรอกจำนวนยาด้านบน</td></tr>';
         
@@ -728,25 +627,27 @@
         document.getElementById('customResult').classList.add('hidden');
     }
 
-    // --- PART 2: Reverse Calculation Logic ---
-    function calculateAllReverse() {
-        calculateReverseTable();
-        calculateCustom();
+    function formatResultDate(dObj) {
+        if (!dObj) return "-";
+        const d = dObj.getDate();
+        const m = dObj.getMonth() + 1;
+        const y = isBE ? dObj.getFullYear() + 543 : dObj.getFullYear();
+        return `${d}/${m}/${y}`;
     }
+
+    function calculateAllReverse() { calculateReverseTable(); calculateCustom(); }
 
     function calculateReverseTable() {
         const pills = parseFloat(document.getElementById('reversePillsInput').value);
-        const startDateVal = document.getElementById('reverseStartDate').value;
+        const startDateObj = fpReverseStart.selectedDates[0];
         const tbody = document.getElementById('reverseResultBody');
         
-        if (!pills || pills <= 0 || !startDateVal) {
+        if (!pills || pills <= 0 || !startDateObj) {
             tbody.innerHTML = '<tr><td colspan="3" class="p-6 sm:p-8 text-center text-gray-400 text-sm">กรุณากรอกจำนวนยาและวันที่ให้ครบถ้วน</td></tr>';
             return;
         }
 
-        const startDate = new Date(startDateVal);
-        startDate.setHours(0,0,0,0);
-
+        const startDate = new Date(startDateObj); startDate.setHours(0,0,0,0);
         const presets = [
             { label: "1 x 1", daily: 1 }, { label: "1 x 2", daily: 2 }, { label: "1 x 3", daily: 3 }, { label: "1 x 4", daily: 4 }, { label: "1 x 1 EOD (วันเว้นวัน)", daily: 0.5 },
             { label: "1/2 x 1", daily: 0.5 }, { label: "1/2 x 2", daily: 1 }, { label: "1/2 x 3", daily: 1.5 }, { label: "1/2 x 4", daily: 2 }, { label: "1/2 x 1 EOD (วันเว้นวัน)", daily: 0.25 },
@@ -760,43 +661,31 @@
         presets.forEach(p => {
             const totalDaysRaw = pills / p.daily;
             const isExact = Number.isInteger(totalDaysRaw) || Math.abs(totalDaysRaw - Math.round(totalDaysRaw)) < 0.01;
-            const roundDays = Math.floor(totalDaysRaw);
-            const weeks = (totalDaysRaw / 7).toFixed(1);
-            
+            const roundDays = Math.floor(totalDaysRaw); const weeks = (totalDaysRaw / 7).toFixed(1);
             const displayDays = isExact ? roundDays : `~${roundDays}`;
             const detailText = isExact ? '' : `<span class="text-[10px] sm:text-xs text-gray-400 block mt-0.5 sm:mt-1">(${totalDaysRaw.toFixed(2)})</span>`;
             const weekText = `<span class="text-[10px] sm:text-xs text-gray-500 block mt-0.5 sm:mt-1">${weeks} สัปดาห์</span>`;
-
-            const targetDate = new Date(startDate);
-            targetDate.setDate(targetDate.getDate() + (roundDays - 1));
-            const formattedDate = `${targetDate.getDate()}/${targetDate.getMonth()+1}/${targetDate.getFullYear()}`;
+            const targetDate = new Date(startDate); targetDate.setDate(targetDate.getDate() + (roundDays - 1));
+            const formattedDate = formatResultDate(targetDate);
 
             html += `
                 <tr class="hover:bg-yellow-50 transition-colors">
                     <td class="p-2 sm:p-3 text-xs sm:text-sm font-medium text-gray-700 border-b border-gray-100">${p.label}</td>
                     <td class="p-2 sm:p-3 text-center border-b border-gray-100">
                         <span class="font-bold text-yellow-700 text-sm sm:text-lg">${displayDays}</span>
-                        ${detailText}
-                        ${weekText}
+                        ${detailText} ${weekText}
                     </td>
-                    <td class="p-2 sm:p-3 text-center border-b border-gray-100">
-                         <span class="font-bold text-yellow-900 bg-yellow-100 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded text-xs sm:text-sm">${formattedDate}</span>
-                    </td>
-                </tr>
-            `;
+                    <td class="p-2 sm:p-3 text-center border-b border-gray-100"><span class="font-bold text-yellow-900 bg-yellow-100 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded text-xs sm:text-sm">${formattedDate}</span></td>
+                </tr>`;
         });
         tbody.innerHTML = html;
     }
 
     function renderWeekDaysSelector() {
         const container = document.querySelector('#weekDaysSelector .flex');
-        const shortDays = ["อา", "จ", "อ", "พ", "พฤ", "ศ", "ส"];
-        let html = '';
+        const shortDays = ["อา", "จ", "อ", "พ", "พฤ", "ศ", "ส"]; let html = '';
         shortDays.forEach((day, index) => {
-            html += `<div>
-                    <input type="checkbox" id="customDay-${index}" class="day-checkbox hidden" value="${index}" onchange="calculateCustom()">
-                    <label for="customDay-${index}" class="block w-8 h-8 sm:w-10 sm:h-10 leading-8 sm:leading-10 text-center rounded-full border border-gray-300 text-gray-600 bg-white cursor-pointer hover:bg-gray-50 transition-colors select-none text-xs sm:text-sm font-bold">${day}</label>
-                </div>`;
+            html += `<div><input type="checkbox" id="customDay-${index}" class="day-checkbox hidden" value="${index}" onchange="calculateCustom()"><label for="customDay-${index}" class="block w-8 h-8 sm:w-10 sm:h-10 leading-8 sm:leading-10 text-center rounded-full border border-gray-300 text-gray-600 bg-white cursor-pointer hover:bg-gray-50 transition-colors select-none text-xs sm:text-sm font-bold">${day}</label></div>`;
         });
         container.innerHTML = html;
     }
@@ -804,58 +693,34 @@
     function toggleWeekDays() {
         const freq = document.getElementById('customFreq').value;
         const selector = document.getElementById('weekDaysSelector');
-        if (freq === 'specific') {
-            selector.classList.remove('hidden');
-        } else {
-            selector.classList.add('hidden');
-        }
+        if (freq === 'specific') { selector.classList.remove('hidden'); } else { selector.classList.add('hidden'); }
     }
 
     function validateDosageInput(input) {
         let value = parseFloat(input.value);
-        if (isNaN(value) || value <= 0) {
-            value = 0.25;
-        } else {
-            value = Math.round(value * 4) / 4;
-            if (value < 0.25) value = 0.25;
-        }
-        input.value = value;
-        calculateCustom();
+        if (isNaN(value) || value <= 0) { value = 0.25; } else { value = Math.round(value * 4) / 4; if (value < 0.25) value = 0.25; }
+        input.value = value; calculateCustom();
     }
 
     function calculateCustom() {
         const resultDiv = document.getElementById('customResult');
         const totalPills = parseFloat(document.getElementById('reversePillsInput').value);
-        const startDateVal = document.getElementById('reverseStartDate').value;
+        const startDateObj = fpReverseStart.selectedDates[0];
 
-        if (!totalPills || totalPills <= 0 || !startDateVal) {
-            resultDiv.classList.add('hidden');
-            return;
-        }
-
+        if (!totalPills || totalPills <= 0 || !startDateObj) { resultDiv.classList.add('hidden'); return; }
         const perDose = parseFloat(document.getElementById('customPerDose').value);
         const times = parseFloat(document.getElementById('customTimes').value);
         const freq = document.getElementById('customFreq').value;
         
         if (!perDose || !times) return;
-
-        let remainingPills = totalPills;
-        let currentDate = new Date(startDateVal);
-        currentDate.setHours(0,0,0,0);
-        let daysPassed = 0;
-        let dailyDose = perDose * times;
-        let lastDoseDate = null;
-        const maxLoop = 10000;
-        let loopCount = 0;
-
+        let remainingPills = totalPills; let currentDate = new Date(startDateObj); currentDate.setHours(0,0,0,0);
+        let daysPassed = 0; let dailyDose = perDose * times; let lastDoseDate = null;
+        const maxLoop = 10000; let loopCount = 0;
         let selectedDays = [];
+
         if (freq === 'specific') {
             document.querySelectorAll('.day-checkbox:checked').forEach(cb => selectedDays.push(parseInt(cb.value)));
-            if (selectedDays.length === 0) {
-                document.getElementById('customEndDate').innerText = "โปรดเลือกวัน";
-                resultDiv.classList.remove('hidden');
-                return;
-            }
+            if (selectedDays.length === 0) { document.getElementById('customEndDate').innerText = "โปรดเลือกวัน"; resultDiv.classList.remove('hidden'); return; }
         }
 
         while (remainingPills >= 0 && loopCount < maxLoop) {
@@ -865,40 +730,22 @@
             else if (freq === 'specific') { if (selectedDays.includes(currentDate.getDay())) consume = true; }
 
             if (consume) {
-                if (remainingPills >= dailyDose) {
-                    remainingPills -= dailyDose;
-                    lastDoseDate = new Date(currentDate);
-                } else { break; }
+                if (remainingPills >= dailyDose) { remainingPills -= dailyDose; lastDoseDate = new Date(currentDate); } else { break; }
             }
-            
-            currentDate.setDate(currentDate.getDate() + 1);
-            daysPassed++;
-            loopCount++;
+            currentDate.setDate(currentDate.getDate() + 1); daysPassed++; loopCount++;
         }
         
-        const day = currentDate.getDate();
-        const month = currentDate.getMonth() + 1;
-        const year = currentDate.getFullYear();
-        const formattedDate = `${day}/${month}/${year}`;
-        
-        let lastDoseStr = "-";
-        let lastDoseDurationStr = "";
+        const formattedDate = formatResultDate(currentDate);
+        let lastDoseStr = "-"; let lastDoseDurationStr = "";
         
         if (lastDoseDate) {
-             const ld = lastDoseDate.getDate();
-             const lm = lastDoseDate.getMonth() + 1;
-             const ly = lastDoseDate.getFullYear();
-             lastDoseStr = `${ld}/${lm}/${ly}`;
-             const startD = new Date(startDateVal);
-             startD.setHours(0,0,0,0);
-             const diffTime = lastDoseDate - startD;
-             const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24)) + 1;
+             lastDoseStr = formatResultDate(lastDoseDate);
+             const startD = new Date(startDateObj); startD.setHours(0,0,0,0);
+             const diffTime = lastDoseDate - startD; const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24)) + 1;
              lastDoseDurationStr = `(ทานได้ ${diffDays} วัน)`;
         }
 
-        const totalDaysAppt = daysPassed + 1;
-        const apptDurationStr = `(ระยะห่าง ${totalDaysAppt} วัน)`;
-
+        const totalDaysAppt = daysPassed + 1; const apptDurationStr = `(ระยะห่าง ${totalDaysAppt} วัน)`;
         document.getElementById('customEndDate').innerText = formattedDate;
         document.getElementById('customLastDoseDate').innerText = lastDoseStr;
         document.getElementById('durationToLastDose').innerText = lastDoseDurationStr;
@@ -906,50 +753,39 @@
         resultDiv.classList.remove('hidden');
     }
 
-    // --- History Functions ---
     function triggerSaveEffect(statusId) {
         const el = document.getElementById(statusId);
         if(!el) return;
-        el.classList.remove('saving-active');
-        void el.offsetWidth; // trigger reflow
-        el.classList.add('saving-active');
+        el.classList.remove('saving-active'); void el.offsetWidth; el.classList.add('saving-active');
     }
 
     function saveForwardHistory() {
-        const startVal = document.getElementById('startDate').value;
-        const endVal = document.getElementById('endDate').value;
+        const startDate = fpStart.selectedDates[0]; const endDate = fpEnd.selectedDates[0];
         const includeDay = document.getElementById('includeEndDate').checked;
-        if (!startVal || !endVal) return;
+        if (!startDate || !endDate) return;
         
-        const startDate = new Date(startVal);
-        const endDate = new Date(endVal);
-        startDate.setHours(0,0,0,0);
-        endDate.setHours(0,0,0,0);
-        const diffTime = Math.abs(endDate - startDate);
-        let totalDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-        if (includeDay) totalDays += 1;
+        const sd = new Date(startDate); const ed = new Date(endDate);
+        sd.setHours(0,0,0,0); ed.setHours(0,0,0,0);
+        const diffTime = Math.abs(ed - sd);
+        let totalDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); if (includeDay) totalDays += 1;
 
         const item = {
-            id: Date.now(),
-            type: 'calc_meds',
-            label: 'ระยะเวลา',
-            detail: `เริ่ม ${formatDateTH(startVal)} ถึง ${formatDateTH(endVal)}`,
-            result: `${totalDays} วัน`,
+            id: Date.now(), type: 'calc_meds', label: 'ระยะเวลา',
+            detail: `เริ่ม ${formatDateTH(sd)} ถึง ${formatDateTH(ed)}`, result: `${totalDays} วัน`,
             timestamp: new Date().toLocaleDateString('th-TH', { hour: '2-digit', minute: '2-digit' })
         };
-        addHistoryItem(item);
-        triggerSaveEffect('saveStatus1');
+        addHistoryItem(item); triggerSaveEffect('saveStatus1');
     }
 
     function addHistoryItem(item) {
-        checkAndResetHistoryMidnight(); // เช็คอีกครั้งก่อนบันทึก เผื่อผู้ใช้เปิดหน้าเว็บค้างไว้ข้ามคืน
+        checkAndResetHistoryMidnight(); 
         let history = JSON.parse(localStorage.getItem('medCalcHistory') || '[]');
         if (history.length > 0) {
             const lastItem = history[0];
             if (lastItem.type === item.type && lastItem.detail === item.detail && lastItem.result === item.result) return; 
         }
         history.unshift(item);
-        if (history.length > 7) history = history.slice(0, 7);
+        if (history.length > 10) history = history.slice(0, 10);
         localStorage.setItem('medCalcHistory', JSON.stringify(history));
         loadHistory();
     }
@@ -957,47 +793,76 @@
     function loadHistory() {
         const list = document.getElementById('historyList');
         const history = JSON.parse(localStorage.getItem('medCalcHistory') || '[]');
-        if (history.length === 0) {
-            list.innerHTML = '<li class="text-center text-gray-400 text-xs sm:text-sm py-4">ยังไม่มีรายการบันทึก</li>';
-            return;
+        if (history.length === 0) { list.innerHTML = '<li class="text-center text-gray-400 text-xs sm:text-sm py-6">ยังไม่มีรายการบันทึก</li>'; return; }
+
+        const dateColorPalette = [
+            'bg-rose-100 text-rose-700 border border-rose-200', 'bg-sky-100 text-sky-700 border border-sky-200',
+            'bg-emerald-100 text-emerald-700 border border-emerald-200', 'bg-amber-100 text-amber-700 border border-amber-200',
+            'bg-purple-100 text-purple-700 border border-purple-200', 'bg-teal-100 text-teal-700 border border-teal-200',
+            'bg-fuchsia-100 text-fuchsia-700 border border-fuchsia-200'
+        ];
+        let dateColorMap = {}; let colorIndex = 0;
+
+        function highlightDates(text) {
+            return text.replace(/\d{1,2}\/\d{1,2}\/\d{4}/g, match => {
+                if (!dateColorMap[match]) { dateColorMap[match] = dateColorPalette[colorIndex % dateColorPalette.length]; colorIndex++; }
+                return `<span class="inline-block px-1.5 py-0.5 rounded-md font-bold text-[10px] sm:text-xs ${dateColorMap[match]} mx-0.5 shadow-sm">${match}</span>`;
+            });
         }
+
         let html = '';
         history.forEach(item => {
-            const iconClass = item.type === 'calc_meds' ? 'text-blue-500 fa-clock' : 'text-indigo-500 fa-calendar-alt';
-            const bgClass = item.type === 'calc_meds' ? 'bg-blue-50' : 'bg-indigo-50';
+            let iconClass, bgClass, borderClass;
+            if (item.type === 'calc_meds') { iconClass = 'fa-pills'; bgClass = 'bg-blue-100 text-[#3C79F5]'; borderClass = 'border-blue-200'; }
+            else if (item.type === 'calc_duration') { iconClass = 'fa-calendar-plus'; bgClass = 'bg-blue-500 text-white shadow-md'; borderClass = 'border-blue-400'; }
+            else { iconClass = 'fa-calendar-alt'; bgClass = 'bg-yellow-100 text-yellow-600'; borderClass = 'border-yellow-200'; }
+            
+            const formattedDetail = highlightDates(item.detail);
+            const formattedResult = highlightDates(item.result);
+            
             html += `
-                <li class="bg-white p-2.5 sm:p-3 rounded-lg shadow-sm border border-gray-200 flex justify-between items-center animate-fade-in">
-                    <div class="flex items-start gap-2.5 sm:gap-3">
-                        <div class="${bgClass} p-1.5 sm:p-2 rounded-full w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center shrink-0"><i class="fas ${iconClass} text-xs sm:text-base"></i></div>
-                        <div>
-                            <div class="font-bold text-gray-700 text-xs sm:text-sm">${item.result}</div>
-                            <div class="text-[10px] sm:text-xs text-gray-500">${item.detail}</div>
+                <li class="bg-white p-3 sm:p-4 rounded-xl shadow-sm border border-gray-100 hover:${borderClass} hover:shadow-md transition-all group animate-fade-in flex justify-between items-center gap-2 sm:gap-3 relative">
+                    <div class="flex items-start sm:items-center gap-3 sm:gap-4 w-full overflow-hidden">
+                        <div class="${bgClass} p-2 rounded-full w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center shrink-0 mt-1 sm:mt-0">
+                            <i class="fas ${iconClass} text-sm sm:text-lg"></i>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <div class="flex flex-wrap items-center gap-2 mb-1.5">
+                                <div class="font-bold text-gray-800 text-sm sm:text-base">${formattedResult}</div>
+                                <span class="text-[9px] sm:text-[10px] bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full shrink-0 font-medium border border-slate-200"><i class="far fa-clock mr-1"></i> ${item.timestamp}</span>
+                            </div>
+                            <div class="text-[11px] sm:text-xs text-gray-600 leading-relaxed">${formattedDetail}</div>
                         </div>
                     </div>
-                    <div class="text-[10px] sm:text-xs text-gray-400 text-right"><div>${item.timestamp}</div></div>
+                    <div class="shrink-0 pl-1 sm:pl-2 border-l border-gray-100 self-stretch flex items-center">
+                        <button onclick="deleteHistoryItem(${item.id})" class="text-gray-300 hover:text-red-500 bg-gray-50 hover:bg-red-50 w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center transition-colors" title="ลบรายการนี้"><i class="fas fa-trash-alt text-[10px] sm:text-xs"></i></button>
+                    </div>
                 </li>`;
         });
         list.innerHTML = html;
     }
 
+    function deleteHistoryItem(id) {
+        let history = JSON.parse(localStorage.getItem('medCalcHistory') || '[]');
+        history = history.filter(item => item.id !== id);
+        localStorage.setItem('medCalcHistory', JSON.stringify(history));
+        loadHistory();
+    }
+
     function toggleModal() {
         const body = document.querySelector('body');
         const modal = document.querySelector('#clearHistoryModal');
-        modal.classList.toggle('opacity-0');
-        modal.classList.toggle('pointer-events-none');
-        body.classList.toggle('modal-active');
+        modal.classList.toggle('opacity-0'); modal.classList.toggle('pointer-events-none'); body.classList.toggle('modal-active');
     }
 
     function performClearHistory() {
-        localStorage.removeItem('medCalcHistory');
-        loadHistory();
-        toggleModal();
+        localStorage.removeItem('medCalcHistory'); loadHistory(); toggleModal();
     }
 
-    function formatDateTH(dateStr) {
-        if (!dateStr) return '-';
-        const d = new Date(dateStr);
-        return `${d.getDate()}/${d.getMonth()+1}/${d.getFullYear()+543}`;
+    function formatDateTH(dObj) {
+        if (!dObj) return '-';
+        const d = dObj.getDate(); const m = dObj.getMonth() + 1; const y = isBE ? dObj.getFullYear() + 543 : dObj.getFullYear();
+        return `${d}/${m}/${y}`;
     }
 </script>
 
